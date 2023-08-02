@@ -1,0 +1,14 @@
+# folder
+*__/
+p*/
+r*/
+**/*pycache*/
+learner/*ipy*/
+
+# log
+*.log
+*.yml
+*.jpg
+*.pptx
+*.out
+*.whl
