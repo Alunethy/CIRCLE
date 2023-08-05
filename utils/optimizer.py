@@ -39,7 +39,7 @@ def get_optimizer(model, trans, args):
             {'params': trans.parameters(), 'lr': args.lr * 10, "weight_decay": 1e-3}
         ], lr=args.lr)
 
-    print(optimizer)
+    #print(optimizer)
     return optimizer 
     
 

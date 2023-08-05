@@ -6,7 +6,7 @@ Date: 02/26/2021
 """
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,2,3"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
 import sys
 sys.path.append('./')
@@ -28,9 +28,8 @@ def run(args):
     device = torch.device("cuda", args.local_rank)
     torch.autograd.set_detect_anomaly = True
 
-    datasets = [
-             'Quake_Smart-seq2_Lung','Tosches_turtle','Bach','hrvatin'
-                ]
+    datasets=['Quake_Smart-seq2_Heart', 'Quake_Smart-seq2_Limb_Muscle', 'Quake_Smart-seq2_Lung', 'Quake_Smart-seq2_Trachea', 'Romanov', 'Tosches_turtle', 'Wang_Lung', 'yan', 'Young']
+
 
     for data in datasets:
         print("Clustering in the dataset: ", data)
@@ -112,7 +111,7 @@ def get_args(argv):
     parser.add_argument('--which_contrastive', type=str, default='SupConLoss',
                         choices=["SingleCirculatePairConLoss", "PairConLoss", "DRC_contrastive"
                                  , "CirculatePairConLoss", "NT_Xent", "Circulate_NT_Xent", "Neighbor_PairConLoss",
-                                 "central_PairConLoss", "HypersphereLoss", "SupConLoss"])
+                                 "central_PairConLoss", "HypersphereLoss", "SupConLoss",'infoNCE'])
 
     # Dataset
     parser.add_argument('--datapath', type=str, default='../datasets/')
@@ -144,7 +143,7 @@ def get_args(argv):
                         help='number of distributed processes')
 
     # contrastive learning
-    parser.add_argument('--objective', type=str, default='Top_contrastive', choices=["SCCL", "contrastive", "clustering",
+    parser.add_argument('--objective', type=str, default='Top_contrastive', choices=["SCCL", 'ablation',"contrastive", "clustering",
                                                                                         "DRC_contrastive", "VAE_contrastive",
                                                                                         "ScName_contrastive", "central_contrastive",
                                                                                          "Hypersphere", "Sup_contrastive", "Top_contrastive"])

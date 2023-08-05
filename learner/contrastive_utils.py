@@ -13,6 +13,31 @@ import os
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
 import gc
 import math
+import torch.nn.functional as F
+
+class InfoNCELoss(nn.Module):
+    def __init__(self,temperature=0.5):
+        super(InfoNCELoss,self).__init__()
+        self.temperature = temperature
+    def forward(self,z1,z2):
+        batch_size = z1.shape[0]
+        # 计算正样本的分数
+        positive_logits = (z1 * z2).sum(dim=-1) / self.temperature
+        positive_logits = positive_logits.view(batch_size, 1)
+
+        # 计算负样本的分数
+        negative_logits = torch.matmul(z1, z2.t()) / self.temperature
+        mask = torch.eye(batch_size).bool().to(z1.device)
+        negative_logits.masked_fill_(mask, float('-inf'))  # 将正样本的分数设置为负无穷大
+        negative_logits = negative_logits.view(batch_size, -1)
+
+        # 计算 InfoNCE 损失
+        logits = torch.cat((positive_logits, negative_logits), dim=1)
+        labels = torch.zeros(batch_size, dtype=torch.long).to(z1.device)
+        loss = F.cross_entropy(logits, labels, reduction='sum')  # 求和
+        loss /= batch_size
+        return {"loss": loss}
+
 
 class GatherLayer(torch.autograd.Function):
     """Gather tensors from all process, supporting backward propagation."""

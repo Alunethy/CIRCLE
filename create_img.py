@@ -37,7 +37,7 @@ def line_maker(x1,x2,y1,y2,arg):
     if arg.objective == "SCCL":
         plt.plot(x1,y1["cluster_loss"],color='red',label="cluster_loss")
         plt.plot(x1,y1["contrastive_loss"],color='green',label="contrastive_loss")
-    elif arg.objective == "contrastive":
+    elif arg.objective == "contrastive" or arg.objective=='ablation':
         plt.plot(x1,y1["contrastive_loss"],color='green',label="contrastive_loss")
     elif arg.objective == "clustering":
         plt.plot(x1,y1["cluster_loss"],color='red',label="cluster_loss")

@@ -73,8 +73,9 @@ def get_kmeans_centers(trans, train_loader, num_classes, args, device, resPath, 
     ori_cluster_centers, ori_clusterscores = get_confusion(ori_list, target_list, num_classes, args.seed)
     df = pd.DataFrame(["ARI:", ori_clusterscores["ARI"], " NMI:", ori_clusterscores["NMI"], " AMI:", ori_clusterscores["AMI"]])
     df.to_csv(args.resPath + "_Ori_scores.txt", sep=' ', index=False, header=False)
-    f = create_img.create_img(ori_list, target_list, label_dirc)
-    f.savefig(resPath + 'Ori_kmeans.jpg')
+    # disable tsne in ablation study
+    # f = create_img.create_img(ori_list, target_list, label_dirc)
+    # f.savefig(resPath + 'Ori_kmeans.jpg')
 
     # confusion = Confusion(num_classes)
     # clustering_model = KMeans(n_clusters=num_classes)

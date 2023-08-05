@@ -16,7 +16,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from learner.cluster_utils import target_distribution
-from learner.contrastive_utils import PairConLoss
+from learner.contrastive_utils import PairConLoss,InfoNCELoss
 from learner.contrastive_utils import CirculatePairConLoss, SingleCirculatePairConLoss, SupConLoss, HypersphereLoss
 from learner.contrastive_utils import NT_Xent, Circulate_NT_Xent, Neighbor_PairConLoss, central_PairConLoss
 import os
@@ -43,6 +43,8 @@ class SCCLvTrainer(nn.Module):
 
         if self.which_contrastive == 'PairConLoss':
             self.contrast_loss = PairConLoss(temperature=self.args.temperature).cuda()
+        elif self.which_contrastive == 'infoNCE':
+            self.contrast_loss=InfoNCELoss(temperature=self.args.temperature).cuda()
         elif self.which_contrastive == 'CirculatePairConLoss':
             self.contrast_loss = CirculatePairConLoss(temperature=self.args.temperature).cuda()
         elif self.which_contrastive == 'NT_Xent':
@@ -61,6 +63,11 @@ class SCCLvTrainer(nn.Module):
             self.contrast_loss = HypersphereLoss().cuda()
         else:
             print("there are some mistakes!")
+        
+        if self.args.objective=='ablation':
+            print('ablation test!')
+        if self.args.which_contrastive=='infoNCE':
+            print('use infoNCE!')
 
         self.gstep = 0
         print(f"*****Intialize SCCLv, temp:{self.args.temperature}, eta:{self.args.eta}\n")
@@ -74,7 +81,7 @@ class SCCLvTrainer(nn.Module):
         record_cscore = {'ARI': [], 'NMI': [], 'AMI': []}
 
         # init Kmeans
-        kmeans = KMeans(n_clusters=self.args.num_classes * 2, random_state=self.args.seed)
+        #kmeans = KMeans(n_clusters=self.args.num_classes * 2, random_state=self.args.seed)
 
         for i in np.arange(self.args.max_iter+1):
             # for batch in self.train_loader:
@@ -99,7 +106,7 @@ class SCCLvTrainer(nn.Module):
                 #     all_emb2 = torch.cat((all_emb2, emb2.detach()), dim=0)
                 #     all_emb3 = torch.cat((all_emb3, emb3.detach()), dim=0)
 
-                losses = self.train_step(dataset, dataset2, dataset2, kmeans)
+                losses = self.train_step(dataset, dataset2, dataset3)
                 record_loss["contrastive_loss"].append(losses['loss'].cpu().detach().numpy())
                 record_loss["cluster_loss"].append(losses['cluster_loss'])
 
@@ -126,12 +133,13 @@ class SCCLvTrainer(nn.Module):
                         ["ARI:", model_score["ARI"], " NMI:", model_score["NMI"], " AMI:", model_score["AMI"], "ACC: ", model_acc])
                     df.to_csv(self.args.resPath + "_Representation_model_Clustering_bestscores.txt", sep=' ', index=False,
                               header=False)
+                    
+                    # disable mid-process tsne to save time
+                    # f = create_img.create_img(embeddings, all_labels, self.label_dirc)
+                    # f.savefig(self.args.resPath + 'True_label_embedding_{}.jpg'.format(i))
 
-                    f = create_img.create_img(embeddings, all_labels, self.label_dirc)
-                    f.savefig(self.args.resPath + 'True_label_embedding_{}.jpg'.format(i))
-
-                    f = create_img.create_img(embeddings, pre_labels, self.label_dirc)
-                    f.savefig(self.args.resPath + 'pre_labels_embedding_{}.jpg'.format(i))
+                    # f = create_img.create_img(embeddings, pre_labels, self.label_dirc)
+                    # f.savefig(self.args.resPath + 'pre_labels_embedding_{}.jpg'.format(i))
 
                 self.model.train()
 
@@ -160,7 +168,7 @@ class SCCLvTrainer(nn.Module):
 
         return select
 
-    def train_step(self, dataset, dataset2, dataset3, kmeans):
+    def train_step(self, dataset, dataset2, dataset3):
         # Clustering loss and Instance-CL loss
 
         # have used the cluster_centers
@@ -191,6 +199,16 @@ class SCCLvTrainer(nn.Module):
             loss = cluster_loss.item() + losses["loss"] + DRC_cluster_loss.item() + losses_class["loss"]
             losses["cluster_loss"] = cluster_loss.item() + DRC_cluster_loss.item()
             losses["loss"] = losses["loss"] + losses_class["loss"]
+        elif self.args.objective=='ablation':
+            num=dataset.shape[0]
+            z2=self.trans.forward(dataset2)
+            z3=self.trans.forward(dataset3)
+            zz = torch.cat([z2, z3], dim=0)
+            ff = F.normalize(self.model.forward(zz), dim=1)
+            f2, f3 = ff[: num], ff[num:]
+            losses=self.contrast_loss(f2, f3)
+            loss = losses["loss"]
+            losses["cluster_loss"] = 0
 
         elif self.args.objective == "Hypersphere":
             embd = self.trans.forward(dataset)

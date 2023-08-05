@@ -4,6 +4,7 @@ p*/
 r*/
 **/*pycache*/
 learner/*ipy*/
+ablation/
 
 # log
 *.log
