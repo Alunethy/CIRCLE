@@ -5,6 +5,7 @@ r*/
 **/*pycache*/
 learner/*ipy*/
 ablation/
+evo*/
 
 # log
 *.log

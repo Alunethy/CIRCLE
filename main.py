@@ -6,7 +6,7 @@ Date: 02/26/2021
 """
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3,4,5,6,7"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
 import sys
 sys.path.append('./')
@@ -28,10 +28,15 @@ def run(args):
     device = torch.device("cuda", args.local_rank)
     torch.autograd.set_detect_anomaly = True
 
-    datasets=['Quake_Smart-seq2_Heart', 'Quake_Smart-seq2_Limb_Muscle', 'Quake_Smart-seq2_Lung', 'Quake_Smart-seq2_Trachea', 'Romanov', 'Tosches_turtle', 'Wang_Lung', 'yan', 'Young']
-
+    datasets=['Adam', 'Bach', 'Bladder', 'Chen', 'deng', 'Diaphragm', 'hrvatin', 'Klein', 'kolodziejczyk', 'Limb_Muscle', 
+              'Mammary_Gland', 'muraro', 'Plasschaert', 'pollen', 'Quake_10x_Spleen', 'Quake_10x_Trachea', 'Quake_Smart-seq2_Diaphragm', 
+              'Quake_Smart-seq2_Heart', 'Quake_Smart-seq2_Limb_Muscle', 'Quake_Smart-seq2_Lung', 'Quake_Smart-seq2_Trachea', 'Romanov', 
+              'Tosches_turtle', 'Wang_Lung', 'yan', 'Young']
+    
+    #data='muraro'
 
     for data in datasets:
+        #args.lam = 0.1 * ix
         print("Clustering in the dataset: ", data)
         args.dataname = data
         set_global_random_seed(args.seed)
@@ -143,14 +148,16 @@ def get_args(argv):
                         help='number of distributed processes')
 
     # contrastive learning
-    parser.add_argument('--objective', type=str, default='Top_contrastive', choices=["SCCL", 'ablation',"contrastive", "clustering",
+    parser.add_argument('--objective', type=str, default='Top_contrastive', choices=["SCCL",'para','ablation',"contrastive", "clustering",
                                                                                         "DRC_contrastive", "VAE_contrastive",
                                                                                         "ScName_contrastive", "central_contrastive",
                                                                                          "Hypersphere", "Sup_contrastive", "Top_contrastive"])
     parser.add_argument('--change', type=str, default='threshold_t_label', help="decript the model in this training step")
     parser.add_argument('--batch_size', type=int, default=6000)
-    parser.add_argument('--temperature', type=float, default=0.2, help="temperature required by contrastive loss")
+    parser.add_argument('--temperature', type=float, default=0.5, help="temperature required by contrastive loss")
     parser.add_argument('--eta', type=float, default=0.1, help="")
+
+    parser.add_argument('--lam', type=float, default=0.1, help="")
 
     # Clustering
     parser.add_argument('--alpha', type=float, default=1.0)

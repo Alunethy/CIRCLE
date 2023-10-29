@@ -68,6 +68,11 @@ class SCCLvTrainer(nn.Module):
             print('ablation test!')
         if self.args.which_contrastive=='infoNCE':
             print('use infoNCE!')
+        
+        if self.args.objective=='para':
+            print(f'use para! lam:{self.args.lam}')
+            self.contrast_loss=InfoNCELoss(temperature=self.args.temperature).cuda()
+            self.contrast_loss2=CirculatePairConLoss(temperature=self.args.temperature).cuda()
 
         self.gstep = 0
         print(f"*****Intialize SCCLv, temp:{self.args.temperature}, eta:{self.args.eta}\n")
@@ -208,6 +213,25 @@ class SCCLvTrainer(nn.Module):
             f2, f3 = ff[: num], ff[num:]
             losses=self.contrast_loss(f2, f3)
             loss = losses["loss"]
+            losses["cluster_loss"] = 0
+        
+        elif self.args.objective=='para':
+            num=dataset.shape[0]
+            z1=self.trans.forward(dataset)
+            z2=self.trans.forward(dataset2)
+            z3=self.trans.forward(dataset3)
+
+            cp=self.model.module.get_cluster_prob(z1, self.model.module.cluster_centers)
+            labels_fin=cp.argmax(1)
+
+            zz = torch.cat([z2, z3], dim=0)
+            ff = F.normalize(self.model.forward(zz), dim=1)
+            f2, f3 = ff[: num], ff[num:]
+            L1=self.contrast_loss(f2, f3)
+            L2=self.contrast_loss2(f2,f3,labels_fin)
+            loss = L1["loss"]+self.args.lam*L2["loss"]
+            losses={}
+            losses["loss"]=loss
             losses["cluster_loss"] = 0
 
         elif self.args.objective == "Hypersphere":

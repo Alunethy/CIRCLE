@@ -28,6 +28,7 @@ def setup_path(args):
     resPath += f'.{args.change}'
     resPath += f'.{args.augmentation_type}'
     resPath += f'.{args.dataname}'
+    resPath += f'.lam{args.lam}'     #only for para test
     resPath += f'.lr{args.lr}'
     resPath += f'.lrscale{args.lr_scale}'
     resPath += f'.eta{args.eta}'
