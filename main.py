@@ -6,7 +6,7 @@ Date: 02/26/2021
 """
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3,4,5,6,7"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
 import sys
 sys.path.append('./')
@@ -28,15 +28,13 @@ def run(args):
     device = torch.device("cuda", args.local_rank)
     torch.autograd.set_detect_anomaly = True
 
-    datasets=['Adam', 'Bach', 'Bladder', 'Chen', 'deng', 'Diaphragm', 'hrvatin', 'Klein', 'kolodziejczyk', 'Limb_Muscle', 
+    
+    datasets=['Adam', 'Bach', 'Bladder', 'deng', 'Diaphragm', 'hrvatin', 'Klein', 'kolodziejczyk', 'Limb_Muscle', 
               'Mammary_Gland', 'muraro', 'Plasschaert', 'pollen', 'Quake_10x_Spleen', 'Quake_10x_Trachea', 'Quake_Smart-seq2_Diaphragm', 
               'Quake_Smart-seq2_Heart', 'Quake_Smart-seq2_Limb_Muscle', 'Quake_Smart-seq2_Lung', 'Quake_Smart-seq2_Trachea', 'Romanov', 
               'Tosches_turtle', 'Wang_Lung', 'yan', 'Young']
-    
-    #data='muraro'
 
     for data in datasets:
-        #args.lam = 0.1 * ix
         print("Clustering in the dataset: ", data)
         args.dataname = data
         set_global_random_seed(args.seed)

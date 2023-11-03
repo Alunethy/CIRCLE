@@ -82,8 +82,9 @@ class SCCLvTrainer(nn.Module):
 
         self.model.train()
         self.trans.train()
-        record_loss = {'cluster_loss': [], 'contrastive_loss': [], 'reg_loss': [], 'selfexpress_loss': []}
-        record_cscore = {'ARI': [], 'NMI': [], 'AMI': []}
+        record_loss = {'cluster_loss': [], 'contrastive_loss': [], 'ins': [], 'clu': []}
+        record_cscore = {'ARI': [], 'NMI': [], 'AMI': [], 'ACC': []}
+        kmeans_cscore={'ARI': [], 'NMI': [], 'AMI': [], 'ACC': []}
 
         # init Kmeans
         #kmeans = KMeans(n_clusters=self.args.num_classes * 2, random_state=self.args.seed)
@@ -114,6 +115,9 @@ class SCCLvTrainer(nn.Module):
                 losses = self.train_step(dataset, dataset2, dataset3)
                 record_loss["contrastive_loss"].append(losses['loss'].cpu().detach().numpy())
                 record_loss["cluster_loss"].append(losses['cluster_loss'])
+                if self.args.objective=='para':
+                    record_loss["ins"].append(losses['ins'].cpu().detach().numpy())
+                    record_loss["clu"].append(losses['clu'].cpu().detach().numpy())
 
             if (self.args.print_freq > 0) and ((i % self.args.print_freq == 0) or (i == self.args.max_iter)):
                 # statistics_log(self.args.tensorboard, losses=losses, global_step=i)
@@ -124,6 +128,11 @@ class SCCLvTrainer(nn.Module):
                 record_cscore["ARI"].append(model_score["ARI"])
                 record_cscore["NMI"].append(model_score["NMI"])
                 record_cscore["AMI"].append(model_score["AMI"])
+                record_cscore["ACC"].append(model_acc)
+                kmeans_cscore["ARI"].append(kmeans_score["ARI"])
+                kmeans_cscore["NMI"].append(kmeans_score["NMI"])
+                kmeans_cscore["AMI"].append(kmeans_score["AMI"])
+                kmeans_cscore["ACC"].append(acc)
                 ARI = model_score["ARI"]
                 if ARI > self.ARI_flag:
                     self.ARI_flag = ARI
@@ -147,6 +156,15 @@ class SCCLvTrainer(nn.Module):
                     # f.savefig(self.args.resPath + 'pre_labels_embedding_{}.jpg'.format(i))
 
                 self.model.train()
+                self.trans.train()
+        
+        import pickle
+        with open(self.args.resPath + 'model_metrics.pkl', 'wb') as f:
+            pickle.dump(record_cscore, f)
+        with open(self.args.resPath + 'kmeans_metrics.pkl', 'wb') as f:
+            pickle.dump(kmeans_cscore, f)
+        with open(self.args.resPath + 'losses.pkl', 'wb') as f:
+            pickle.dump(record_loss, f)
 
         record_x1 = [i for i in range(len(record_loss['cluster_loss']))]
         record_x2 = [i for i in range(len(record_cscore["ARI"]))]
@@ -233,6 +251,8 @@ class SCCLvTrainer(nn.Module):
             losses={}
             losses["loss"]=loss
             losses["cluster_loss"] = 0
+            losses["ins"]=L1["loss"]
+            losses["clu"]=L2["loss"]
 
         elif self.args.objective == "Hypersphere":
             embd = self.trans.forward(dataset)

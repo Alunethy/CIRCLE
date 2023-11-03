@@ -41,6 +41,10 @@ def line_maker(x1,x2,y1,y2,arg):
         plt.plot(x1,y1["contrastive_loss"],color='green',label="contrastive_loss")
     elif arg.objective == "clustering":
         plt.plot(x1,y1["cluster_loss"],color='red',label="cluster_loss")
+    elif arg.objective=='para':
+        plt.plot(x1,y1["contrastive_loss"],color='black',label="contrastive_loss")
+        plt.plot(x1,y1["ins"],color='red',label="ins_conloss")
+        plt.plot(x1,y1["clu"],color='green',label="clu_conloss")
     else:
         print("Img occur mistakes!!")
     plt.legend()
