@@ -1,9 +1,4 @@
-"""
-Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved
 
-Author: Dejiao Zhang (dejiaoz@amazon.com)
-Date: 02/26/2021
-"""
 import os
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
