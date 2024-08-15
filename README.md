@@ -1,4 +1,4 @@
-# scRNA-seq Data Clustering by Cluster-aware Iterative Contrastive Learning
+# CIRCLE: scRNA-seq Data Clustering by Cluster-aware Iterative Contrastive Learning
 This repository is the official implementation of "CIRCLE: scRNA-seq Data Clustering by Cluster-aware Iterative Contrastive Learning"
 ## Overview
 ![arch](pic/model.png)
