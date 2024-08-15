@@ -1,8 +1,8 @@
 # scRNA-seq Data Clustering by Cluster-aware Iterative Contrastive Learning
-This repository is the official implementation of "scRNA-seq Data Clustering by **C**luster-aware **I**terative **C**ontrastive **L**earning"（CICL）
+This repository is the official implementation of "CIRCLE: scRNA-seq Data Clustering by Cluster-aware Iterative Contrastive Learning"
 ## Overview
 ![arch](pic/model.png)
-The proposed model CICL employs a typical model structure of contrastive learning as the backbone.By utilizing an iterative representation learning
+The proposed model CIRCLE employs a typical model structure of contrastive learning as the backbone.By utilizing an iterative representation learning
 and clustering framework with a cluster-aware contrastive loss, it can progressively improve the clustering result by comprehensively exploiting the hidden
 cluster structure for scRNA-seq data representation.
 
